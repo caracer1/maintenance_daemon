@@ -81,7 +81,7 @@ def force_reboot():
         my_timer.cancel()
 
     print "Killing Login Window Process:"
-    my_timer = Timer(30, kill, [subprocess.Popen(['sudo pkill -9 loginwindow'], shell=True, stdout=subprocess.PIPE)])
+    my_timer = Timer(30, kill, [subprocess.Popen(['sudo pkill -9 loginwindow'], shell=True, stdout=subprocess.PIPE).wait()])
     try:
         my_timer.start()
     finally:
@@ -89,20 +89,20 @@ def force_reboot():
 
     print "Restarting NuoRDS Service:"
     my_timer = Timer(30, kill, [
-        subprocess.Popen(['sudo nrdservice stop;sudo nrdservice start;'], shell=True, stdout=subprocess.PIPE)])
+        subprocess.Popen(['sudo nrdservice stop;sudo nrdservice start;'], shell=True, stdout=subprocess.PIPE).wait()])
     try:
         my_timer.start()
     finally:
         my_timer.cancel()
 
     print "Killing Adobe Creative Cloud Daemon:"
-    my_timer = Timer(30, kill, [subprocess.Popen(['sudo pkill -9 AdobeCRDaemon'], shell=True, stdout=subprocess.PIPE)])
+    my_timer = Timer(30, kill, [subprocess.Popen(['sudo pkill -9 AdobeCRDaemon'], shell=True, stdout=subprocess.PIPE).wait()])
     try:
         my_timer.start()
     finally:
         my_timer.cancel()
     print "Attempting Graceful Restart:"
-    my_timer = Timer(30, kill, [subprocess.Popen(['sudo reboot'], shell=True, stdout=subprocess.PIPE)])
+    my_timer = Timer(30, kill, [subprocess.Popen(['sudo reboot'], shell=True, stdout=subprocess.PIPE).wait()])
     try:
         my_timer.start()
     finally:
