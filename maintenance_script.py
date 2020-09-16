@@ -29,6 +29,7 @@ def check_how_many_users():
     concurrently_logged_users=int(concurrently_logged_users)
     if concurrently_logged_users > 8:
         print "Killing Login Window Process:"
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: More than 8 users detected - killing loginwindow process" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         my_timer = Timer(30, kill, [subprocess.Popen(['sudo pkill -9 loginwindow'], shell=True, stdout=subprocess.PIPE)])
         try:
             my_timer.start()
@@ -37,13 +38,13 @@ def check_how_many_users():
     if ave_cpu > 90:
         print "The current cpu usage is: ",ave_cpu
         print "Consider rebooting Server..."
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Check - CPU above 90 percent - attempting reboot " >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         force_reboot()
         sys.exit()
     else:
         print "The current cpu usage is: ", ave_cpu
         print "Check Complete"
-        file = open("/Users/check/Desktop/test.txt", "w")
-        file.close()
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Check Complete - All tests passed - no reboot requested" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         sys.exit()
 
 
@@ -102,6 +103,7 @@ def force_reboot():
     finally:
         my_timer.cancel()
     print "Attempting Graceful Restart:"
+    subprocess.Popen(['date +"%m %d %Y %I:%M %p: Force Reboot Sequence completed - attempting reboot" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
     my_timer = Timer(30, kill, [subprocess.Popen(['sudo reboot'], shell=True, stdout=subprocess.PIPE).wait()])
     try:
         my_timer.start()
@@ -116,8 +118,10 @@ def force_reboot():
 def main():
 
     if sys.argv[1] == '-c':
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Check Requested" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         check_reboot_script()
     elif sys.argv[1] == '-r':
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: Force Reboot Requested" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         force_reboot()
     else:
         print("The flag you have run is not an available option")
