@@ -7,7 +7,7 @@ import argparse
 import os
 import time
 
-
+version_number = "202095a"
 
 #functions for timeout:
 
@@ -28,6 +28,22 @@ def check_backup_and_storage():
     else:
         subprocess.Popen(['date +\"%m %d %Y %I:%M %p: Available Free Space is: \" | perl -pe \'chomp\' >> /users/check/desktop/maintenance_log.txt && df -h / | awk \'NR==2{print $4}\' >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
 
+
+def check_for_updates():
+    gitoutputcheck = subprocess.check_output("sudo git -C /Users/check/Desktop/maintenance_daemon-master/ pull origin master", shell=True).decode("utf-8")
+    file = open("/users/check/desktop/maintenance_log.txt", "a")
+    file.write("Version Number: " + version_number + "\n")
+    file.write("Checking for updates: " + gitoutputcheck)
+    file.close()
+    if "Already up to date" not in str(gitoutputcheck):
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: Update Complete - Restarting script to new version..." >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
+        subprocess.Popen(['sudo launchctl start com.mic.MaintenanceService'], shell=True, stdout=subprocess.PIPE)
+        time.sleep(5)
+        sys.exit()
+
+
+    else:
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: No New updates proceeding with Current Version" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
 
 
 
@@ -97,6 +113,7 @@ def check_reboot_script():
         if has_server_just_been_rebooted == True:
             subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Script called after Startup/Reboot" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         print("Server has been successfully rebooted within the last day: Proceeding with other checks")
+        check_for_updates()
         check_how_many_users()
         sys.exit()
     else:
