@@ -39,7 +39,7 @@ def check_for_updates():
         subprocess.Popen(['date +"%m %d %Y %I:%M %p: Update Complete - Restarting script to new version..." >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         subprocess.Popen(['sudo python /Users/check/Desktop/maintenance_daemon-master/maintenance_script.py -c'], shell=True, stdout=subprocess.PIPE)
         time.sleep(5)
-        sys.exit()
+        #sys.exit()
 
 
     else:
