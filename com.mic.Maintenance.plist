@@ -9,7 +9,7 @@
 	<key>ProgramArguments</key>
 	<array>
 		<string>/usr/bin/python</string>
-		<string>/Users/check/Desktop/maintenance_script.py</string>
+		<string>/Users/check/Desktop/maintenance_daemon-master/maintenance_script.py</string>
 		<string>-c</string>
 	</array>
 	<key>RunAtLoad</key>
