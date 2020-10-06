@@ -7,7 +7,7 @@ import argparse
 import os
 import time
 
-version_number = "202095a-testingupdate-2"
+version_number = "2020106b-cputest"
 
 #functions for timeout:
 
@@ -78,11 +78,13 @@ def check_how_many_users():
     if ave_cpu > 90:
         print "The current cpu usage is: ",ave_cpu
         print "Consider rebooting Server..."
+        force_reboot_high_cpu = True
         subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Check - CPU above 90 percent - attempting reboot " >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         force_reboot()
         #sys.exit()
     else:
         subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Check Complete - All tests passed - no reboot requested" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
+        force_reboot_high_cpu = False
         print "The current cpu usage is: ", ave_cpu
         print "Check Complete"
         time.sleep(2)
@@ -155,30 +157,36 @@ def force_reboot():
         my_timer.start()
     finally:
         my_timer.cancel()
-    print "Attempting Graceful Restart:"
-    subprocess.Popen(['date +"%m %d %Y %I:%M %p: Force Reboot Sequence completed - attempting reboot" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
-    my_timer = Timer(30, kill, [subprocess.Popen(['sudo reboot'], shell=True, stdout=subprocess.PIPE).wait()])
-    try:
-        my_timer.start()
-    finally:
-        my_timer.cancel()
-
-    print "Graceful Restart failed attempting force reboot"
-    subprocess.Popen(['sudo shutdown -r NOW'], shell=True, stdout=subprocess.PIPE)
+	if force_reboot_high_cpu == False:    
+    	print "Attempting Graceful Restart:"
+    	subprocess.Popen(['date +"%m %d %Y %I:%M %p: Force Reboot Sequence completed - attempting reboot" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
+    	my_timer = Timer(30, kill, [subprocess.Popen(['sudo reboot'], shell=True, stdout=subprocess.PIPE).wait()])
+    	try:
+        	my_timer.start()
+    	finally:
+        	my_timer.cancel()
+	    print "Graceful Restart failed attempting force reboot"
+	    subprocess.Popen(['sudo shutdown -r NOW'], shell=True, stdout=subprocess.PIPE)
+	else:
+		subprocess.Popen(['date +"%m %d %Y %I:%M %p: Executing sudo shutdown -r NOW from High CPU Usage - attempting reboot" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
+		subprocess.Popen(['sudo shutdown -r NOW'], shell=True, stdout=subprocess.PIPE)
 
 
 
 def main():
 
     if sys.argv[1] == '-c':
-        subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Check Requested" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Check Requested by Daemon" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         check_reboot_script()
+    elif sys.argv[1] == '-m':
+        subprocess.Popen(['date +"%m %d %Y %I:%M %p: Maintenance Check Requested Manually" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)	
     elif sys.argv[1] == '-r':
         subprocess.Popen(['date +"%m %d %Y %I:%M %p: Force Reboot Requested" >> /users/check/desktop/maintenance_log.txt'], shell=True, stdout=subprocess.PIPE)
         force_reboot()
     else:
         print("The flag you have run is not an available option")
-        print("Usage [-c]: Check if server has been rebooted within 24 hours")
+        print("Usage [-c]: Check (as Daemon) if server has been rebooted within 24 hours")
+        print("Usage [-m]: Check (as User) if server has been rebooted within 24 hours")
         print("Usage [-r]: Force the reboot of the server")
         sys.exit()
 
